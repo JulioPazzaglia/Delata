@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "game_database";
+$dbname = "delataDB";
 
 // Crear conexión
 $conn = new mysqli($servername, $username, $password);
