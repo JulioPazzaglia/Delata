@@ -1,5 +1,4 @@
 <?php
 /*
-aca va a manejarse el game loop.
-
+creacion de los usuarios
 */
