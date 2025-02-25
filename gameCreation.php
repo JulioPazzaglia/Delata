@@ -24,12 +24,12 @@ function createGame($conn)
     $questions = fetchQuestions($conn);
     shuffle($questions);
     $questions = array_slice($questions, 0, 3);
-    $questions = implode(", ", $questions);
+    $questionsStr = implode(", ", $questions);
 
-    $sql = "INSERT INTO `game`(`questions`) VALUES ('[$questions]');";
+    $sql = "INSERT INTO `game`(`questions`) VALUES ('$questionsStr');";
     if ($conn->query($sql) === TRUE) {
-        echo "Game created succesfully";
+        echo "\n Game created succesfully, id: $conn->insert_id \n";
     } else {
-        echo "Error creating game: " . $conn->error;
+        echo "\nError creating game: " . $conn->error;
     }
 }

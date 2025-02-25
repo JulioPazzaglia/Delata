@@ -29,8 +29,8 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS Players (
     number INT PRIMARY KEY,
     name CHAR(255) NOT NULL,
-    game_id INT,
-    votes INT NOT NULL,
+    game_id INT NOT NULL,
+    votes INT,
     hasVoted TINYINT(1) NOT NULL DEFAULT 0
 )";
 
