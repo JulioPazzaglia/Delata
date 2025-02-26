@@ -16,9 +16,9 @@ if ($conn->connect_error) {
 // Crear base de datos
 $sql = "CREATE DATABASE IF NOT EXISTS $dbname";
 if ($conn->query($sql) === TRUE) {
-    echo "Database created successfully \n";
+    echo "Database created successfully <br>";
 } else {
-    echo "Error creating database: " . $conn->error;
+    echo "Error creating database: $conn->error <br>";
 }
 
 $conn->select_db($dbname);

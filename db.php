@@ -3,14 +3,14 @@ include("DBconfig.php");
 
 // creacion la tabla Game
 $sql = "CREATE TABLE IF NOT EXISTS Game (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    game_id INT AUTO_INCREMENT PRIMARY KEY,
     questions TEXT NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table Game created successfully\n";
+    echo "Table Game created successfully <br>";
 } else {
-    echo "Error creating table: " . $conn->error;
+    echo "Error creating table: $conn->error <br>";
 }
 
 // crecion tabla Questions
@@ -20,24 +20,26 @@ $sql = "CREATE TABLE IF NOT EXISTS Questions (
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table Questions created successfully\n";
+    echo "Table Questions created successfully <br>";
 } else {
-    echo "Error creating table: " . $conn->error;
+    echo "Error creating table: $conn->error <br>";
 }
 
 // creacion tabla Players
 $sql = "CREATE TABLE IF NOT EXISTS Players (
-    number INT PRIMARY KEY,
-    name CHAR(255) NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    number CHAR(40) NOT NULL UNIQUE,
+    name CHAR(255) NOT NULL UNIQUE,
     game_id INT NOT NULL,
+    FOREIGN KEY (game_id) REFERENCES Game(game_id),
     votes INT,
     hasVoted TINYINT(1) NOT NULL DEFAULT 0
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table Players created successfully\n";
+    echo "Table Players created successfully <br>";
 } else {
-    echo "Error creating table: " . $conn->error;
+    echo "Error creating table: $conn->error <br>";
 }
 
 // Seediamos las preguntas
@@ -51,9 +53,9 @@ if ($row['total'] == 0) {
     foreach ($questionSeed as $question) {
         $sql = "INSERT INTO Questions (questions) VALUES ('$question')";
         if ($conn->query($sql) === TRUE) {
-            echo "Pregunta '$question' insertada correctamente.<br>";
+            echo "Pregunta '$question' insertada correctamente. <br>";
         } else {
-            echo "Error insertando '$question': " . $conn->error . "<br>";
+            echo "Error insertando '$question': $conn->error <br>";
         }
     }
 } else {

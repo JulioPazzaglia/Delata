@@ -1,5 +1,4 @@
 <?php
-include("DBconfig.php");
 
 
 /*
@@ -19,6 +18,8 @@ function fetchQuestions($conn)
     }
     return $questionsArray;
 }
+
+
 function createGame($conn)
 {
     $questions = fetchQuestions($conn);
@@ -28,8 +29,8 @@ function createGame($conn)
 
     $sql = "INSERT INTO `game`(`questions`) VALUES ('$questionsStr');";
     if ($conn->query($sql) === TRUE) {
-        echo "\n Game created succesfully, id: $conn->insert_id \n";
+        echo "\n Game created succesfully, id: $conn->insert_id <br>";
     } else {
-        echo "\nError creating game: " . $conn->error;
+        echo "\nError creating game: $conn->error <br>";
     }
 }
