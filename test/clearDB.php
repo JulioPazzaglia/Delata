@@ -13,11 +13,11 @@ function deleteTable($conn, $tableName)
     }
 }
 
-// Function to delete a specific ID (Questions or Games) from a table
+// Function to delete a specific ID from a table game
 function deleteId($conn, $table, $id)
 {
     try {
-        $sql = "DELETE FROM $table WHERE $table.id = $id";
+        $sql = "DELETE FROM $table WHERE $table.game_id = $id";
         $conn->query($sql);
         echo "$id was deleted from $table <br>";
     } catch (mysqli_sql_exception $e) {
@@ -49,6 +49,4 @@ function dropDB($conn, $dbname)
     }
 }
 
-dropDB($conn, $dbname);
-
-$conn->close();
+//dropDB($conn, $dbname);

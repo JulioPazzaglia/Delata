@@ -37,6 +37,7 @@ function createGame($conn)
         $sql = "INSERT INTO `Game`(`questions`) VALUES ('$questionsStr');";
         if ($conn->query($sql) === TRUE) {
             echo "\n Game created successfully, ID: " . $conn->insert_id . "<br>";
+            return  $conn->insert_id;
         } else {
             echo "\nError creating game: " . $conn->error . "<br>";
         }

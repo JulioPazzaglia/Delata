@@ -1,4 +1,5 @@
 <?php
+include("test/clearDB.php");
 /*
 aca va a manejarse el game loop.
 */
@@ -42,3 +43,8 @@ aca va a manejarse el game loop.
 /**
  * se borran los usuarios y game
  */
+function endGame($conn, $game_id)
+{
+    deleteId($conn, 'game', $game_id);
+    deletePlayers($conn, $game_id);
+}
