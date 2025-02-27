@@ -1,14 +1,13 @@
 <?php
 include("../DBconfig.php");
 include("../gameCreation.php");
-include("../users.php");
+include("../players.php");
 
 //createGame($conn);
-//createUser($conn, "+5492325423315", "Julio", 1);
-//createUser($conn, "+5492325423315", "Juli", 1);
-//createUser($conn, "+54923254233", "Julio", 1);
-createUser($conn, "+5492326423074", "More", 1);
-//createUser($conn, "+5492325422074", "Angeles", 1);
+//createPlayer($conn, "+5492325423315", "Julio", 1); original
+//createPlayer($conn, "+5492325423315", "Juli", 1); repetir numero = error
+//createPlayer($conn, "+54923254233", "Julio", 1); repetir nombre = error
+createPlayer($conn, "+5492326423074", "More", 1);
 
 /*
 Este archivo va a tener hardcodeado un ejemplo de trabajo.

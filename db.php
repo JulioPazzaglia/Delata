@@ -1,65 +1,66 @@
 <?php
 include("DBconfig.php");
 
-// creacion la tabla Game
-$sql = "CREATE TABLE IF NOT EXISTS Game (
-    game_id INT AUTO_INCREMENT PRIMARY KEY,
-    questions TEXT NOT NULL
-)";
-
-if ($conn->query($sql) === TRUE) {
+try {
+    // Creating the Game table
+    $sql = "CREATE TABLE IF NOT EXISTS Game (
+        game_id INT AUTO_INCREMENT PRIMARY KEY,
+        questions TEXT NOT NULL
+    )";
+    $conn->query($sql);
     echo "Table Game created successfully <br>";
-} else {
-    echo "Error creating table: $conn->error <br>";
+} catch (mysqli_sql_exception $e) {
+    echo "Error creating table: " . $e->getMessage() . "<br>";
 }
 
-// crecion tabla Questions
-$sql = "CREATE TABLE IF NOT EXISTS Questions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    questions TEXT NOT NULL
-)";
-
-if ($conn->query($sql) === TRUE) {
+try {
+    // Creating the Questions table
+    $sql = "CREATE TABLE IF NOT EXISTS Questions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        questions TEXT NOT NULL
+    )";
+    $conn->query($sql);
     echo "Table Questions created successfully <br>";
-} else {
-    echo "Error creating table: $conn->error <br>";
+} catch (mysqli_sql_exception $e) {
+    echo "Error creating table: " . $e->getMessage() . "<br>";
 }
 
-// creacion tabla Players
-$sql = "CREATE TABLE IF NOT EXISTS Players (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    number CHAR(40) NOT NULL UNIQUE,
-    name CHAR(255) NOT NULL UNIQUE,
-    game_id INT NOT NULL,
-    FOREIGN KEY (game_id) REFERENCES Game(game_id),
-    votes INT,
-    hasVoted TINYINT(1) NOT NULL DEFAULT 0
-)";
-
-if ($conn->query($sql) === TRUE) {
+try {
+    // Creating the Players table
+    $sql = "CREATE TABLE IF NOT EXISTS Players (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        number CHAR(40) NOT NULL UNIQUE,
+        name CHAR(255) NOT NULL UNIQUE,
+        game_id INT NOT NULL,
+        FOREIGN KEY (game_id) REFERENCES Game(game_id),
+        votes INT,
+        hasVoted TINYINT(1) NOT NULL DEFAULT 0
+    )";
+    $conn->query($sql);
     echo "Table Players created successfully <br>";
-} else {
-    echo "Error creating table: $conn->error <br>";
+} catch (mysqli_sql_exception $e) {
+    echo "Error creating table: " . $e->getMessage() . "<br>";
 }
 
-// Seediamos las preguntas
-$questionSeed = array('quien?', 'como?', 'cuando?', 'donde?'); // Placeholders
+// Seeding questions
+$questionSeed = array('who?', 'how?', 'when?', 'where?'); // Placeholders
 
-// Revisamos si la tabla está vacía
-$result = $conn->query("SELECT COUNT(*) as total FROM Questions");
-$row = $result->fetch_assoc();
+try {
+    // Checking if the table is empty
+    $result = $conn->query("SELECT COUNT(*) as total FROM Questions");
+    $row = $result->fetch_assoc();
 
-if ($row['total'] == 0) {
-    foreach ($questionSeed as $question) {
-        $sql = "INSERT INTO Questions (questions) VALUES ('$question')";
-        if ($conn->query($sql) === TRUE) {
-            echo "Pregunta '$question' insertada correctamente. <br>";
-        } else {
-            echo "Error insertando '$question': $conn->error <br>";
+    if ($row['total'] == 0) {
+        foreach ($questionSeed as $question) {
+            $sql = "INSERT INTO Questions (questions) VALUES ('$question')";
+            $conn->query($sql);
+            echo "Question '$question' inserted successfully. <br>";
         }
+    } else {
+        echo "The Questions table already contains data.";
     }
-} else {
-    echo "La tabla Questions ya tiene datos.";
+} catch (mysqli_sql_exception $e) {
+    echo "Error inserting questions: " . $e->getMessage() . "<br>";
 }
 
 $conn->close();
