@@ -18,3 +18,22 @@ function createPlayer($conn, $num, $name, $game)
         echo "SQL Error: " . $e->getMessage() . "<br>";
     }
 }
+
+function hasVoted($conn, $num)
+{
+    try {
+        $sql = "SELECT hasVoted FROM Players WHERE num = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $num);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($row = $result->fetch_assoc()) {
+            return $row['hasVoted'];
+        }
+        return null;
+    } catch (mysqli_sql_exception $e) {
+        echo "Error fetching hasVoted: " . $e->getMessage() . "<br>";
+        return null;
+    }
+}
