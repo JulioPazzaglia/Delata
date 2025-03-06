@@ -22,12 +22,12 @@ function createPlayer($conn, $num, $name, $game)
 function hasVoted($conn, $num)
 {
     try {
-        $sql = "SELECT hasVoted FROM Players WHERE num = ?";
+        $sql = "SELECT hasVoted FROM players WHERE players.number = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $num);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($row = $result->fetch_assoc()) {
             return $row['hasVoted'];
         }
