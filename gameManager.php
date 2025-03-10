@@ -45,6 +45,6 @@ aca va a manejarse el game loop.
  */
 function endGame($conn, $game_id)
 {
-    deleteId($conn, 'game', $game_id);
     deletePlayers($conn, $game_id);
+    deleteId($conn, $game_id);
 }
