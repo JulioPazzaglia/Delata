@@ -14,12 +14,12 @@ function deleteTable($conn, $tableName)
 }
 
 // Function to delete a specific ID from a table game
-function deleteId($conn, $table, $id)
+function deleteId($conn, $id)
 {
     try {
-        $sql = "DELETE FROM $table WHERE $table.game_id = $id";
+        $sql = "DELETE FROM game WHERE game.game_id = $id";
         $conn->query($sql);
-        echo "$id was deleted from $table <br>";
+        echo "$id was deleted from game <br>";
     } catch (mysqli_sql_exception $e) {
         echo "Error deleting ID: " . $e->getMessage() . "<br>";
     }

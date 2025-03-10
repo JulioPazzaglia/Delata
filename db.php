@@ -34,7 +34,8 @@ try {
         game_id INT NOT NULL,
         FOREIGN KEY (game_id) REFERENCES Game(game_id),
         votes INT,
-        hasVoted TINYINT(1) NOT NULL DEFAULT 0
+        hasVoted TINYINT(1) NOT NULL DEFAULT 0,
+        isLiar TINYINT(1) NOT NULL DEFAULT 0
     )";
     $conn->query($sql);
     echo "Table Players created successfully <br>";
