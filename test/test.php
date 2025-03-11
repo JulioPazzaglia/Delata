@@ -3,6 +3,7 @@ include("../DBconfig.php");
 include("../gameCreation.php");
 include("../players.php");
 include("../gameManager.php");
+include("../questionsHandler.php");
 
 $newGameId = createGame($conn);
 //createPlayer($conn, "+5492325423315", "Julio", 1); //original
@@ -13,6 +14,8 @@ createPlayer($conn, "+542", "Julio", $newGameId);
 createPlayer($conn, "+543", "Angeles", $newGameId);
 
 selectLiar($conn, $newGameId);
+
+echo fetchGameQuestions($conn, $newGameId);
 
 //endGame($conn, $newGameId);
 
