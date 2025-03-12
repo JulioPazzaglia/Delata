@@ -79,9 +79,9 @@ function selectLiar($conn, $game_id)
         if ($conn->query($sql) === TRUE) {
             echo "\n Liar selected successfully <br>";
         } else {
-            echo "\nError creating game: " . $conn->error . "<br>";
+            echo "\nError seelcting liar: " . $conn->error . "<br>";
         }
     } catch (mysqli_sql_exception $e) {
-        echo "SQL Error while creating game: " . $e->getMessage() . "<br>";
+        echo "SQL Error selectingLiar: " . $e->getMessage() . "<br>";
     }
 }

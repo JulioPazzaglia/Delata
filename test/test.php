@@ -5,6 +5,7 @@ include("../players.php");
 include("../gameManager.php");
 include("../questionsHandler.php");
 
+
 $newGameId = createGame($conn);
 //createPlayer($conn, "+5492325423315", "Julio", 1); //original
 //createPlayer($conn, "+5492325423315", "Juli", 1); //repetir numero = error
@@ -15,7 +16,18 @@ createPlayer($conn, "+543", "Angeles", $newGameId);
 
 selectLiar($conn, $newGameId);
 
-echo fetchGameQuestions($conn, $newGameId);
+$questions = fetchGameQuestions($conn, $newGameId);
+echo extractQuestions($questions)[0] . "<br>";
+insertQuestions($conn, $newGameId);
+
+$questions = fetchGameQuestions($conn, $newGameId);
+echo extractQuestions($questions)[0] . "<br>";
+insertQuestions($conn, $newGameId);
+
+$questions = fetchGameQuestions($conn, $newGameId);
+echo extractQuestions($questions)[0] . "<br>";
+insertQuestions($conn, $newGameId);
+
 
 //endGame($conn, $newGameId);
 
