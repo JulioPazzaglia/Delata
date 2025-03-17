@@ -1,6 +1,6 @@
 <?php
 //DB config 
-include("DBconfig.php");
+include 'DBconfig.php';
 
 //conectamos a whatsapp
 include 'whatsappConnection.php';

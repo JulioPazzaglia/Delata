@@ -1,5 +1,4 @@
 <?php
-include("../DBconfig.php");
 
 // Function to delete a table
 function deleteTable($conn, $tableName)
