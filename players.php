@@ -3,21 +3,18 @@
 creacion de los usuarios
 */
 
-function createPlayer($conn, $num, $name, $game)
+function createPlayer($conn, $phoneNumber, $name, $game_id, $is_admin = false)
 {
     try {
-        $sql = "INSERT INTO `players`(`number`, `name`, `game_id`, `votes`, `hasVoted`) 
-                VALUES ('$num','$name','$game',0,0)";
-
-        if ($conn->query($sql) === TRUE) {
-            echo "User $name created successfully <br>";
-        } else {
-            echo "Error creating user: " . $conn->error . "<br>";
-        }
+        $stmt = $conn->prepare("INSERT INTO Players (phone_number, name, game_id, is_admin) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssii", $phoneNumber, $name, $game_id, $is_admin);
+        $stmt->execute();
+        echo "<br>✅ Player $name added to game $game_id (admin: " . ($is_admin ? "yes" : "no") . ")";
     } catch (mysqli_sql_exception $e) {
-        echo "SQL Error: " . $e->getMessage() . "<br>";
+        echo "SQL Error adding player: " . $e->getMessage() . "<br>";
     }
 }
+
 
 function hasVoted($conn, $num)
 {
@@ -35,5 +32,21 @@ function hasVoted($conn, $num)
     } catch (mysqli_sql_exception $e) {
         echo "Error fetching hasVoted: " . $e->getMessage() . "<br>";
         return null;
+    }
+}
+
+function playerExists($conn, $phoneNumber)
+{
+    try {
+        $sql = "SELECT 1 FROM players WHERE phone_number = ? LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $phoneNumber);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        return $result->num_rows > 0;
+    } catch (mysqli_sql_exception $e) {
+        echo "Error checking player existence: " . $e->getMessage() . "<br>";
+        return false;
     }
 }

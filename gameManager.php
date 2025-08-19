@@ -1,100 +1,55 @@
 <?php
-include('clearDB.php');
-/*
-aca va a manejarse el game loop.
-*/
+include_once("clearDB.php");
+include_once("gameCreation.php");
+include_once("players.php");
+include_once("questionsHandler.php");
 
-//Esto es un Test
-function recibido($telefonoCliente)
+
+function manageMessage($conn, $phone_number, $messageText)
 {
-    // Asegurar que el número esté en el formato correcto
-    $telefonoCliente = trim($telefonoCliente);
+    $messageText = strtolower(trim($messageText));
 
-    // Si el número empieza con '549' (con '9' después de '54'), lo eliminamos
-    if (substr($telefonoCliente, 0, 3) == '549') {
-        $telefonoCliente = substr($telefonoCliente, 0, 2) . substr($telefonoCliente, 3); // Elimina el '9' después de '54'
-        error_log("Número con el '9' eliminado: $telefonoCliente");
+    if (playerExists($conn, $phone_number)) {
+        echo "📍 Player $phone_number is already registered. (Further actions for existing players not implemented yet).";
+        return;
     }
 
-    // Si el número está vacío, no enviamos el mensaje
-    if (empty($telefonoCliente)) {
-        error_log("Error: El número de teléfono no es válido.");
-        return false;
-    }
-
-    /*
-    $data = [
-        "messaging_product" => "whatsapp",
-        "to" => "$telefonoCliente",
-        "type" => "text",
-        "text" => ["body" => "test"]
-    ];
-    
-    error_log("Datos enviados a la API: " . json_encode($data));
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer $token",
-        "Content-Type: application/json"
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    
-    $response = curl_exec($ch);
-    
-    if (curl_errno($ch)) {
-        error_log("Error en la petición cURL: " . curl_error($ch));
-    }
-    
-    curl_close($ch);
-    
-    // Log de la respuesta de la API
-    error_log("Respuesta de la API: " . $response);
-    
-    return $response;
-    */
+    handleNewPlayerMessage($conn, $phone_number, $messageText);
 }
 
-/**
- * Recibimos un mensaje del creador de la partida
- * creamos un 'game', introducimos el jugador y le damos un id
- */
+function handleNewPlayerMessage($conn, $phone_number, $messageText)
+{
+    // Normalize input
+    $messageText = strtolower(trim($messageText));
+    $parts = preg_split('/\s+/', $messageText);
 
-/**
- * recibimos otros mensajes para unirse a un 'game'
- * los metemos en la tabla.
- */
+    if ($parts[0] === "crear" && count($parts) >= 2) {
+        $name = ucfirst($parts[1]);
+        echo "🛠 Creating a game and adding you as the first player: $name<br>";
 
-/**
- * recibimos el ok del creador y empieza la partida
- * se elige un mentiroso
- */
+        $game_id = createGame($conn);
+        if ($game_id) {
+            createPlayer($conn, $phone_number, $name, $game_id, true); // true = is_admin
+            echo "✅ Game created with ID $game_id. You are now the admin.";
+        } else {
+            echo "❌ Failed to create the game.";
+        }
+        return;
+    }
 
-//empieza el loop
+    if ($parts[0] === "unirme" && count($parts) >= 3) {
+        $game_id = intval($parts[1]);
+        $name = ucfirst($parts[2]);
+        echo "🤝 Adding you ($name) to game ID $game_id...";
+        // TODO: handleJoinCommand()
+        return;
+    }
 
-/**
- * se le envia las preguntas a todos menos el mentiroso
- */
+    echo "👋 Hello! To get started, type *create [your name]* to start a new game, or *join [game ID] [your name]* to join an existing one.";
+}
 
-/**
- * se reciben los votos y revisamos si es el mentiroso
- */
 
-//si no se descubre sigue asi por X rondas
 
-/**
- * se descubre el mentiroso
- */
-
-/**
- * nueva partida?
- */
-
-/**
- * se borran los usuarios y game
- */
 function endGame($conn, $game_id)
 {
     deletePlayers($conn, $game_id);

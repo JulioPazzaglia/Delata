@@ -3,6 +3,26 @@
 manejo de las preguntas
 */
 
+function fetchQuestions($conn)
+{
+    try {
+        $sql = "SELECT question_text FROM Questions";
+        $result = $conn->query($sql);
+        $questionsArray = [];
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $questionsArray[] = $row['question_text'];
+            }
+        }
+        return $questionsArray;
+    } catch (mysqli_sql_exception $e) {
+        echo "Error fetching questions: " . $e->getMessage() . "<br>";
+        return [];
+    }
+}
+
+
 function fetchGameQuestions($conn, $game_id)
 {
     try {

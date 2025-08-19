@@ -2,7 +2,7 @@
 include("DBconfig.php");
 
 try {
-    // Create Game table – stores the current state of a game and remaining questions
+    // Create Game table
     $sql = "CREATE TABLE IF NOT EXISTS Game (
         game_id INT AUTO_INCREMENT PRIMARY KEY,
         questions TEXT NOT NULL
@@ -14,7 +14,7 @@ try {
 }
 
 try {
-    // Create Questions table – original pool of all possible questions
+    // Create Questions table
     $sql = "CREATE TABLE IF NOT EXISTS Questions (
         id INT AUTO_INCREMENT PRIMARY KEY,
         question_text TEXT NOT NULL
@@ -26,24 +26,23 @@ try {
 }
 
 try {
-    // Create Players table – stores who's in the game and their state
+    // Create Players table
     $sql = "CREATE TABLE IF NOT EXISTS Players (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        phone_number VARCHAR(40) NOT NULL UNIQUE,
-        name VARCHAR(100) NOT NULL,
-        game_id INT NOT NULL,
-        votes INT DEFAULT 0,
-        has_voted TINYINT(1) NOT NULL DEFAULT 0,
-        is_liar TINYINT(1) NOT NULL DEFAULT 0,
-        FOREIGN KEY (game_id) REFERENCES Game(game_id)
-    )";
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    phone_number VARCHAR(40) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    game_id INT NOT NULL,
+    is_liar TINYINT(1) NOT NULL DEFAULT 0,
+    is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    FOREIGN KEY (game_id) REFERENCES Game(game_id)
+    );";
     $conn->query($sql);
     echo "[✔] Table 'Players' created.<br>";
 } catch (mysqli_sql_exception $e) {
     echo "[✖] Error creating 'Players' table: " . $e->getMessage() . "<br>";
 }
 
-// Placeholder questions – just to populate the table if empty
+// Seed questions if table is empty
 $questionSeed = ['who?', 'how?', 'when?', 'where?'];
 
 try {
@@ -52,7 +51,6 @@ try {
 
     if ($row['total'] == 0) {
         $stmt = $conn->prepare("INSERT INTO Questions (question_text) VALUES (?)");
-
         foreach ($questionSeed as $q) {
             $stmt->bind_param("s", $q);
             $stmt->execute();
@@ -65,4 +63,5 @@ try {
     echo "[✖] Error seeding questions: " . $e->getMessage() . "<br>";
 }
 
-$conn->close();
+// ⛔ NO CERRAR LA CONEXIÓN AQUÍ
+// $conn->close();  <-- ELIMINADO

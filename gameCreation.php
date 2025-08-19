@@ -5,26 +5,6 @@
 Tabel create game
 */
 
-// Function to fetch questions
-function fetchQuestions($conn)
-{
-    try {
-        $sql = "SELECT questions FROM Questions";
-        $result = $conn->query($sql);
-        $questionsArray = [];
-
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $questionsArray[] = $row['questions'];
-            }
-        }
-        return $questionsArray;
-    } catch (mysqli_sql_exception $e) {
-        echo "Error fetching questions: " . $e->getMessage() . "<br>";
-        return [];
-    }
-}
-
 // Function to create a game
 function createGame($conn)
 {
