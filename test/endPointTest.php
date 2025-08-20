@@ -8,3 +8,4 @@ $messageText = strtolower(trim($_GET['messageText'] ?? ''));
 
 // Lógica central delegada a gameManager
 manageMessage($conn, $phone_number, $messageText);
+
