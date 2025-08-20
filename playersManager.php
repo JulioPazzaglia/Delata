@@ -50,3 +50,25 @@ function playerExists($conn, $phoneNumber)
         return false;
     }
 }
+
+function fetchPlayers($conn, $game_id)
+{
+    try {
+        $sql = "SELECT id FROM players WHERE players.game_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $game_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $ids = [];
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $ids[] = $row['id'];
+            }
+        }
+        return $ids;
+    } catch (mysqli_sql_exception $e) {
+        echo "Error fetching players: " . $e->getMessage() . "<br>";
+        return null;
+    }
+}

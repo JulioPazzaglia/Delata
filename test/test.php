@@ -1,5 +1,16 @@
 <?php
 include("../db.php");
+
+
+
+
+
+
+
+
+
+/*
+include("../db.php");
 include("../gameCreation.php");
 include("../players.php");
 include("../gameManager.php");
@@ -77,7 +88,6 @@ $conn->close();
 
 
 // esto deberia ser un comentario
-/*
 <?php
 include("../db.php");
 include("../gameCreation.php");

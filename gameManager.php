@@ -1,57 +1,47 @@
 <?php
-include_once("clearDB.php");
-include_once("gameCreation.php");
-include_once("players.php");
-include_once("questionsHandler.php");
-
-
-function manageMessage($conn, $phone_number, $messageText)
+function createGame($conn)
 {
-    $messageText = strtolower(trim($messageText));
+    try {
+        $questions = fetchQuestions($conn);
+        shuffle($questions);
+        $questions = array_slice($questions, 0, 3);
+        $questionsStr = implode(", ", $questions);
 
-    if (playerExists($conn, $phone_number)) {
-        echo "📍 Player $phone_number is already registered. (Further actions for existing players not implemented yet).";
-        return;
-    }
-
-    handleNewPlayerMessage($conn, $phone_number, $messageText);
-}
-
-function handleNewPlayerMessage($conn, $phone_number, $messageText)
-{
-    // Normalize input
-    $messageText = strtolower(trim($messageText));
-    $parts = preg_split('/\s+/', $messageText);
-
-    if ($parts[0] === "crear" && count($parts) >= 2) {
-        $name = ucfirst($parts[1]);
-        echo "🛠 Creating a game and adding you as the first player: $name<br>";
-
-        $game_id = createGame($conn);
-        if ($game_id) {
-            createPlayer($conn, $phone_number, $name, $game_id, true); // true = is_admin
-            echo "✅ Game created with ID $game_id. You are now the admin.";
+        $sql = "INSERT INTO `Game`(`questions`) VALUES ('$questionsStr');";
+        if ($conn->query($sql) === TRUE) {
+            echo "\n Game created successfully, ID: " . $conn->insert_id . "<br>";
+            return  $conn->insert_id;
         } else {
-            echo "❌ Failed to create the game.";
+            echo "\nError creating game: " . $conn->error . "<br>";
         }
-        return;
+    } catch (mysqli_sql_exception $e) {
+        echo "SQL Error while creating game: " . $e->getMessage() . "<br>";
     }
-
-    if ($parts[0] === "unirme" && count($parts) >= 3) {
-        $game_id = intval($parts[1]);
-        $name = ucfirst($parts[2]);
-        echo "🤝 Adding you ($name) to game ID $game_id...";
-        // TODO: handleJoinCommand()
-        return;
-    }
-
-    echo "👋 Hello! To get started, type *create [your name]* to start a new game, or *join [game ID] [your name]* to join an existing one.";
 }
 
-
-
-function endGame($conn, $game_id)
+function gameExists($conn, $game_id)
 {
-    deletePlayers($conn, $game_id);
-    deleteId($conn, $game_id);
+    $stmt = $conn->prepare("SELECT game_id FROM Game WHERE game_id = ?");
+    $stmt->bind_param("i", $game_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    return $result->num_rows > 0;
+}
+
+function selectLiar($conn, $game_id)
+{
+    try {
+        $players = fetchPlayers($conn, $game_id);
+        shuffle($players);
+
+        $sql = "UPDATE `players` SET `isLiar`='1' WHERE `id` = $players[0]";
+        if ($conn->query($sql) === TRUE) {
+            echo "\n Liar selected successfully <br>";
+        } else {
+            echo "\nError seelcting liar: " . $conn->error . "<br>";
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "SQL Error selectingLiar: " . $e->getMessage() . "<br>";
+    }
 }

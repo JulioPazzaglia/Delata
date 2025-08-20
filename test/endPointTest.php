@@ -1,6 +1,6 @@
 <?php
-include("../db.php");
-include("../gameManager.php");
+include("../messageManager.php");
+include("../DBconfig.php");
 
 // Parámetros del link
 $phone_number = $_GET['phone_number'] ?? null;
