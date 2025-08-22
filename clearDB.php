@@ -1,51 +1,96 @@
 <?php
+// Maintenance helpers for groups & players (debug/admin use)
+// - Debug & comments in English
+// - Player-facing messages should NOT be emitted here
 
-// Function to delete a table
-function deleteTable($conn, $tableName)
+/**
+ * Truncate an allowed table (safe whitelist).
+ * NOTE: Use only for debug/reset. This is a destructive operation.
+ */
+function truncateTable(mysqli $conn, string $tableName): void
 {
     try {
-        $sql = "DELETE FROM $tableName;";
+        $allowed = ['groups', 'players'];
+        if (!in_array($tableName, $allowed, true)) {
+            echo "Refused to truncate unknown table: {$tableName}<br>";
+            return;
+        }
+        $sql = "TRUNCATE TABLE `{$tableName}`";
         $conn->query($sql);
-        echo "Table $tableName deleted successfully <br>";
+        echo "Table {$tableName} truncated successfully.<br>";
     } catch (mysqli_sql_exception $e) {
-        echo "Error deleting table: " . $e->getMessage() . "<br>";
+        echo "Error truncating table {$tableName}: " . $e->getMessage() . "<br>";
     }
 }
 
-// Function to delete a specific ID from a table game
-function deleteId($conn, $id)
+/**
+ * Delete a specific group by group_id.
+ * Players will be removed via FK ON DELETE CASCADE if configured.
+ */
+function deleteGroup(mysqli $conn, int $group_id): void
 {
     try {
-        $sql = "DELETE FROM game WHERE game.game_id = $id";
-        $conn->query($sql);
-        echo "$id was deleted from game <br>";
+        $sql = "DELETE FROM `groups` WHERE `group_id` = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $group_id);
+        $stmt->execute();
+        $affected = $stmt->affected_rows;
+        $stmt->close();
+
+        echo "Group {$group_id} deleted. Affected rows: {$affected}.<br>";
     } catch (mysqli_sql_exception $e) {
-        echo "Error deleting ID: " . $e->getMessage() . "<br>";
+        echo "Error deleting group {$group_id}: " . $e->getMessage() . "<br>";
     }
 }
 
-// Function to delete players by game_id
-function deletePlayers($conn, $game_id)
+/**
+ * Delete all players by group_id (useful if you don't rely on FK cascade).
+ */
+function deletePlayersByGroupId(mysqli $conn, int $group_id): void
 {
     try {
-        $sql = "DELETE FROM players WHERE players.game_id = $game_id";
-        $conn->query($sql);
-        echo "Players from game: $game_id were deleted <br>";
+        $sql = "DELETE FROM `players` WHERE `group_id` = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $group_id);
+        $stmt->execute();
+        $affected = $stmt->affected_rows;
+        $stmt->close();
+
+        echo "Players from group {$group_id} deleted. Affected rows: {$affected}.<br>";
     } catch (mysqli_sql_exception $e) {
-        echo "Error deleting players: " . $e->getMessage() . "<br>";
+        echo "Error deleting players for group {$group_id}: " . $e->getMessage() . "<br>";
     }
 }
 
-// Function to drop a database
-function dropDB($conn, $dbname)
+/**
+ * Drop a database (extremely destructive).
+ * Guarded by a confirmation flag to avoid accidents.
+ */
+function dropDB(mysqli $conn, string $dbname, bool $confirm = false): void
 {
     try {
-        $sql = "DROP DATABASE $dbname";
+        if (!$confirm) {
+            echo "Refused to drop database {$dbname}: confirmation flag is false.<br>";
+            return;
+        }
+        // Minimal safety guard: refuse dropping system databases
+        $protected = ['mysql', 'information_schema', 'performance_schema', 'sys'];
+        if (in_array($dbname, $protected, true)) {
+            echo "Refused to drop protected database: {$dbname}.<br>";
+            return;
+        }
+
+        $sql = "DROP DATABASE `{$dbname}`";
         $conn->query($sql);
-        echo "Database dropped successfully <br>";
+        echo "Database {$dbname} dropped successfully.<br>";
     } catch (mysqli_sql_exception $e) {
-        echo "Error dropping database: " . $e->getMessage() . "<br>";
+        echo "Error dropping database {$dbname}: " . $e->getMessage() . "<br>";
     }
 }
 
-//dropDB($conn, $dbname);
+// ---- Usage examples (keep commented in production) ----
+// truncateTable($conn, 'players');
+// truncateTable($conn, 'groups');
+// deletePlayersByGroupId($conn, 123);
+// deleteGroup($conn, 123);
+// dropDB($conn, 'delata_debug', true);

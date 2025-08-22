@@ -1,82 +1,114 @@
 <?php
+// Message manager (group-first). 
+// - Debug/comments in English
+// - Player-facing messages in Spanish
+
 include_once("clearDB.php");
-include_once("gameManager.php");
-include_once("playersManager.php");
+include_once("groupsManager.php");        // now provides createGroup, groupExists, selectLiar, etc.
+include_once("playersManager.php");     // playerExists, createPlayer, joinGroup, createGroupWithAdmin, ...
 include_once("questionsHandler.php");
+include_once("whatsappConnection.php"); // sendText($wa_id, $message)
 
-
+/**
+ * Entry point for plain-text commands (fallback to Flow).
+ * $phone_number is the wa_id (E.164 without '+').
+ */
 function manageMessage($conn, $phone_number, $messageText)
 {
-    $messageText = strtolower(trim($messageText));
+    $messageText = strtolower(trim((string)$messageText));
 
     if (playerExists($conn, $phone_number)) {
-        echo "📍 Player $phone_number is already registered. (Further actions for existing players not implemented yet).";
+        // Existing player - you can route in-game commands here later.
+        // Debug in English; user-facing in Spanish.
+        error_log("Player {$phone_number} already registered. Skipping new-player flow.");
+        sendText($phone_number, "📍 Ya estás registrado. Próximamente agregaremos comandos para jugadores existentes.");
         return;
     }
 
     handleNewPlayerMessage($conn, $phone_number, $messageText);
 }
 
+/**
+ * Handle first-contact commands for non-registered players.
+ * Supported:
+ *  - crear [nombre]
+ *  - unirme [ID_grupo] [nombre]
+ */
 function handleNewPlayerMessage($conn, $phone_number, $messageText)
 {
-    $messageText = strtolower(trim($messageText));
+    $messageText = strtolower(trim((string)$messageText));
     $parts = preg_split('/\s+/', $messageText);
+    $parts = array_values(array_filter($parts, fn($p) => $p !== ''));
 
-    if ($parts[0] === "crear" && count($parts) >= 2) {
+    if (empty($parts)) {
+        sendHelp($phone_number);
+        return;
+    }
+
+    $cmd = $parts[0] ?? '';
+
+    // CREATE: create group and add creator as admin
+    if ($cmd === "crear" && count($parts) >= 2) {
         $name = ucfirst($parts[1]);
-        echo "🛠 Creating a game and adding you as the first player: $name<br>";
-        createGameWithAdmin($conn, $phone_number, $name);
+        if (!checkName($phone_number, $name)) return;
+
+        sendText($phone_number, "🛠 Creando un grupo y agregándote como administrador: {$name}");
+        $group_id = createGroup($conn);
+        if (!$group_id) {
+            error_log("createGroup returned null/false");
+            sendText($phone_number, "❌ No se pudo crear el grupo. Intentá de nuevo.");
+            return;
+        }
+        createPlayer($conn, $phone_number, $name, (int)$group_id, true);
         return;
     }
 
-    if ($parts[0] === "unirme" && count($parts) >= 3) {
-        $game_id = intval($parts[1]);
-        $name = ucfirst($parts[2]);
-        joinGame($conn, $phone_number, $name, $game_id);
+    // JOIN: join existing group as non-admin
+    if ($cmd === "unirme" && count($parts) >= 3) {
+        $group_id = intval($parts[1]);
+        $name     = ucfirst($parts[2]);
+        if (!checkName($phone_number, $name)) return;
+
+        createPlayer($conn, $phone_number, $name, $group_id, false);
         return;
     }
 
-    echo "👋 Para comenzar, escribí *crear [tu nombre]* para iniciar una partida o *unirme [ID del juego] [tu nombre]* para sumarte a una existente.";
-
+    // fallback
+    sendHelp($phone_number);
 }
 
-function checkName($name)
+/**
+ * Validate display name.
+ */
+function checkName($phone_number, $name): bool
 {
     if (strlen($name) < 2) {
-        echo "⚠️ El nombre es demasiado corto. Por favor escribí un nombre más claro.";
+        sendText($phone_number, "⚠️ El nombre es demasiado corto. Por favor escribí un nombre más claro.");
         return false;
     }
     return true;
 }
 
-
-function createGameWithAdmin($conn, $phone_number, $name)
+/**
+ * Help message for new players.
+ */
+function sendHelp($phone_number): void
 {
-    if (!checkName($name)) return;
-    $game_id = createGame($conn);
-    if ($game_id) {
-        createPlayer($conn, $phone_number, $name, $game_id, true);
-        echo "✅ Game created with ID $game_id. You are now the admin.";
-    } else {
-        echo "❌ Failed to create the game.";
-    }
+    sendText(
+        $phone_number,
+        "👋 Para comenzar, escribí:\n" .
+            "• *crear [tu nombre]* para iniciar un grupo\n" .
+            "• *unirme [ID del grupo] [tu nombre]* para sumarte a uno existente"
+    );
 }
 
-function joinGame($conn, $phone_number, $name, $game_id)
+/**
+ * End a group and cascade delete players (admin-only guard should be enforced elsewhere).
+ * Kept for compatibility with previous naming; now uses group helpers.
+ */
+function endGroup($conn, $group_id)
 {
-    if (!checkName($name)) return;
-    if (!gameExists($conn, $game_id)) {
-        echo "❌ El juego con ID $game_id no existe.";
-        return;
-    }
-    createPlayer($conn, $phone_number, $name, $game_id, false);
-    echo "✅ Te uniste correctamente al juego $game_id como $name.";
-}
-
-
-
-function endGame($conn, $game_id)
-{
-    deletePlayers($conn, $game_id);
-    deleteId($conn, $game_id);
+    // Prefer FK ON DELETE CASCADE; this is a manual cleanup fallback.
+    deletePlayersByGroupId($conn, (int)$group_id);
+    deleteGroup($conn, (int)$group_id);
 }

@@ -1,67 +1,79 @@
 <?php
 include("DBconfig.php");
 
+// Ensure InnoDB + UTF8MB4 for FK & emojis if needed
+$conn->query("SET NAMES utf8mb4");
+
+// ---- Create `groups` table ----
 try {
-    // Create Game table
-    $sql = "CREATE TABLE IF NOT EXISTS Game (
-        game_id INT AUTO_INCREMENT PRIMARY KEY,
-        questions TEXT NOT NULL
-    )";
+    $sql = "CREATE TABLE IF NOT EXISTS groups (
+        group_id     INT AUTO_INCREMENT PRIMARY KEY,
+        admin_wa_id  VARCHAR(20) NOT NULL,
+        created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
     $conn->query($sql);
-    echo "[✔] Table 'Game' created.<br>";
+    echo "[✔] Table 'groups' created.<br>";
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error creating 'Game' table: " . $e->getMessage() . "<br>";
+    echo "[✖] Error creating 'groups' table: " . $e->getMessage() . "<br>";
 }
 
+// ---- Create `questions` table ----
 try {
-    // Create Questions table
-    $sql = "CREATE TABLE IF NOT EXISTS Questions (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+    $sql = "CREATE TABLE IF NOT EXISTS questions (
+        id            INT AUTO_INCREMENT PRIMARY KEY,
         question_text TEXT NOT NULL
-    )";
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
     $conn->query($sql);
-    echo "[✔] Table 'Questions' created.<br>";
+    echo "[✔] Table 'questions' created.<br>";
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error creating 'Questions' table: " . $e->getMessage() . "<br>";
+    echo "[✖] Error creating 'questions' table: " . $e->getMessage() . "<br>";
 }
 
+// ---- Create `players` table ----
+// player_id = wa_id (E.164 without '+') as PRIMARY KEY to avoid duplicates
 try {
-    // Create Players table
-    $sql = "CREATE TABLE IF NOT EXISTS Players (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    phone_number VARCHAR(40) NOT NULL UNIQUE,
-    name VARCHAR(100) NOT NULL,
-    game_id INT NOT NULL,
-    is_liar TINYINT(1) NOT NULL DEFAULT 0,
-    is_admin TINYINT(1) NOT NULL DEFAULT 0,
-    FOREIGN KEY (game_id) REFERENCES Game(game_id)
-    );";
+    $sql = "CREATE TABLE IF NOT EXISTS players (
+        player_id   VARCHAR(20) PRIMARY KEY,   -- wa_id
+        group_id    INT NULL,
+        name        VARCHAR(80) NOT NULL,
+        is_liar     TINYINT(1) NOT NULL DEFAULT 0,
+        is_admin    TINYINT(1) NOT NULL DEFAULT 0,
+        active      TINYINT(1) NOT NULL DEFAULT 1,
+        joined_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_players_group
+          FOREIGN KEY (group_id) REFERENCES groups(group_id)
+          ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
     $conn->query($sql);
-    echo "[✔] Table 'Players' created.<br>";
+
+    // Useful index for lookups by group
+    $conn->query("CREATE INDEX IF NOT EXISTS idx_players_group ON players(group_id);");
+    echo "[✔] Table 'players' created (with FK & index).<br>";
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error creating 'Players' table: " . $e->getMessage() . "<br>";
+    echo "[✖] Error creating 'players' table: " . $e->getMessage() . "<br>";
 }
 
-// Seed questions if table is empty
+// ---- Seed questions if empty ----
 $questionSeed = ['who?', 'how?', 'when?', 'where?'];
 
 try {
-    $result = $conn->query("SELECT COUNT(*) AS total FROM Questions");
+    $result = $conn->query("SELECT COUNT(*) AS total FROM questions");
     $row = $result->fetch_assoc();
 
-    if ($row['total'] == 0) {
-        $stmt = $conn->prepare("INSERT INTO Questions (question_text) VALUES (?)");
+    if ((int)$row['total'] === 0) {
+        $stmt = $conn->prepare("INSERT INTO questions (question_text) VALUES (?)");
         foreach ($questionSeed as $q) {
             $stmt->bind_param("s", $q);
             $stmt->execute();
-            echo "[✔] Inserted question: '$q' <br>";
+            echo "[✔] Inserted question: '{$q}'<br>";
         }
+        $stmt->close();
     } else {
-        echo "[i] Questions table already has data.<br>";
+        echo "[i] 'questions' table already has data.<br>";
     }
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error seeding questions: " . $e->getMessage() . "<br>";
+    echo "[✖] Error seeding 'questions': " . $e->getMessage() . "<br>";
 }
 
-// ⛔ NO CERRAR LA CONEXIÓN AQUÍ
-// $conn->close();  <-- ELIMINADO
+// ⛔ Do NOT close the connection here; other scripts may keep using $conn
+// $conn->close();
