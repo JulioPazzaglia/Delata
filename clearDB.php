@@ -1,51 +1,67 @@
 <?php
 
-// Function to delete a table
-function deleteTable($conn, $tableName)
+// Function to clear all rows from a table (does NOT drop the table)
+function clearTable(mysqli $conn, string $tableName)
 {
-    try {
-        $sql = "DELETE FROM $tableName;";
-        $conn->query($sql);
-        echo "Table $tableName deleted successfully <br>";
-    } catch (mysqli_sql_exception $e) {
-        echo "Error deleting table: " . $e->getMessage() . "<br>";
+    $allowed = ['Players', 'Questions', 'Groups'];
+    if (!in_array($tableName, $allowed, true)) {
+        error_log("[DB][clearTable] Forbidden table name $tableName");
+        return;
     }
+
+    $sql = sprintf("DELETE FROM `%s`;", $tableName);
+    $conn->query($sql);
+
+    error_log("[DB][clearTable] Table $tableName cleared");
 }
 
-// Function to delete a specific ID from a table game
-function deleteId($conn, $id)
+
+// Function to delete a specific ID from a table group
+function deleteGroupById(mysqli $conn, int $group_id)
 {
     try {
-        $sql = "DELETE FROM game WHERE game.game_id = $id";
-        $conn->query($sql);
-        echo "$id was deleted from game <br>";
+        $sql  = "DELETE FROM `Groups` WHERE `group_id` = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $group_id);
+        $stmt->execute();
+
+        error_log("[DB][deleteGroupById] Group $group_id deleted");
+        echo "$group_id was deleted from Groups <br>";
     } catch (mysqli_sql_exception $e) {
         echo "Error deleting ID: " . $e->getMessage() . "<br>";
     }
 }
 
-// Function to delete players by game_id
-function deletePlayers($conn, $game_id)
+
+// Function to delete players by group_id
+function deletePlayersByGroupId(mysqli $conn, int $group_id)
 {
     try {
-        $sql = "DELETE FROM players WHERE players.game_id = $game_id";
-        $conn->query($sql);
-        echo "Players from game: $game_id were deleted <br>";
+        $sql  = "DELETE FROM `players` WHERE `group_id` = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $group_id);
+        $stmt->execute();
+
+        error_log("[DB][deletePlayersByGroupId] Deleted {$stmt->affected_rows} players from group $group_id");
+        echo "Players from group: $group_id were deleted <br>";
     } catch (mysqli_sql_exception $e) {
         echo "Error deleting players: " . $e->getMessage() . "<br>";
     }
 }
 
+
 // Function to drop a database
-function dropDB($conn, $dbname)
+function dropDB(mysqli $conn, string $dbname)
 {
     try {
-        $sql = "DROP DATABASE $dbname";
+        $sql = "DROP DATABASE `" . $dbname . "`";
         $conn->query($sql);
-        echo "Database dropped successfully <br>";
+
+        error_log("[DB][dropDB] Database dropped successfully");
     } catch (mysqli_sql_exception $e) {
-        echo "Error dropping database: " . $e->getMessage() . "<br>";
+        error_log("[DB][dropDB][ERROR] " . $e->getMessage());
     }
 }
+
 
 //dropDB($conn, $dbname);

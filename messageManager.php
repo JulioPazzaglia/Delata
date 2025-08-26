@@ -37,7 +37,6 @@ function handleNewPlayerMessage($conn, $phone_number, $messageText)
     }
 
     echo "👋 Para comenzar, escribí *crear [tu nombre]* para iniciar una partida o *unirme [ID del juego] [tu nombre]* para sumarte a una existente.";
-
 }
 
 function checkName($name)
@@ -77,6 +76,6 @@ function joinGame($conn, $phone_number, $name, $game_id)
 
 function endGame($conn, $game_id)
 {
-    deletePlayers($conn, $game_id);
-    deleteId($conn, $game_id);
+    deletePlayersByGroupId($conn, $game_id);
+    deleteGroupById($conn, $game_id);
 }
