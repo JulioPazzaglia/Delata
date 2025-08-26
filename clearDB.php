@@ -26,9 +26,8 @@ function deleteGroupById(mysqli $conn, int $group_id)
         $stmt->execute();
 
         error_log("[DB][deleteGroupById] Group $group_id deleted");
-        echo "$group_id was deleted from Groups <br>";
     } catch (mysqli_sql_exception $e) {
-        echo "Error deleting ID: " . $e->getMessage() . "<br>";
+        error_log("[DB][deleteGroupById] Error deleting group by id: $group_id. Error: " . $e->getMessage());
     }
 }
 
@@ -43,9 +42,8 @@ function deletePlayersByGroupId(mysqli $conn, int $group_id)
         $stmt->execute();
 
         error_log("[DB][deletePlayersByGroupId] Deleted {$stmt->affected_rows} players from group $group_id");
-        echo "Players from group: $group_id were deleted <br>";
     } catch (mysqli_sql_exception $e) {
-        echo "Error deleting players: " . $e->getMessage() . "<br>";
+        error_log("[DB][deletePlayersByGroupId] Error deleting players from group $group_id. Error: " . $e->getMessage());
     }
 }
 
