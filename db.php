@@ -2,15 +2,15 @@
 include("DBconfig.php");
 
 try {
-    // Create Game table
-    $sql = "CREATE TABLE IF NOT EXISTS Game (
-        game_id INT AUTO_INCREMENT PRIMARY KEY,
+    // Create Group table
+    $sql = "CREATE TABLE IF NOT EXISTS Groups (
+        group_id INT AUTO_INCREMENT PRIMARY KEY,
         questions TEXT NOT NULL
     )";
     $conn->query($sql);
-    echo "[✔] Table 'Game' created.<br>";
+    echo "[✔] Table 'Groups' created.<br>";
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error creating 'Game' table: " . $e->getMessage() . "<br>";
+    echo "[✖] Error creating 'Groups' table: " . $e->getMessage() . "<br>";
 }
 
 try {
@@ -31,10 +31,10 @@ try {
     id INT AUTO_INCREMENT PRIMARY KEY,
     phone_number VARCHAR(40) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
-    game_id INT NOT NULL,
+    group_id INT NOT NULL,
     is_liar TINYINT(1) NOT NULL DEFAULT 0,
     is_admin TINYINT(1) NOT NULL DEFAULT 0,
-    FOREIGN KEY (game_id) REFERENCES Game(game_id)
+    FOREIGN KEY (group_id) REFERENCES Groups(group_id)
     );";
     $conn->query($sql);
     echo "[✔] Table 'Players' created.<br>";

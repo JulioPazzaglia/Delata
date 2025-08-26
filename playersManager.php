@@ -3,13 +3,13 @@
 creacion de los usuarios
 */
 
-function createPlayer($conn, $phoneNumber, $name, $game_id, $is_admin = false)
+function createPlayer($conn, $phoneNumber, $name, $group_id, $is_admin = false)
 {
     try {
-        $stmt = $conn->prepare("INSERT INTO Players (phone_number, name, game_id, is_admin) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssii", $phoneNumber, $name, $game_id, $is_admin);
+        $stmt = $conn->prepare("INSERT INTO Players (phone_number, name, group_id, is_admin) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssii", $phoneNumber, $name, $group_id, $is_admin);
         $stmt->execute();
-        echo "<br>✅ Player $name added to game $game_id (admin: " . ($is_admin ? "yes" : "no") . ")";
+        echo "<br>✅ Player $name added to group $group_id (admin: " . ($is_admin ? "yes" : "no") . ")";
     } catch (mysqli_sql_exception $e) {
         echo "SQL Error adding player: " . $e->getMessage() . "<br>";
     }
@@ -51,12 +51,12 @@ function playerExists($conn, $phoneNumber)
     }
 }
 
-function fetchPlayers($conn, $game_id)
+function fetchPlayers($conn, $group_id)
 {
     try {
-        $sql = "SELECT id FROM players WHERE players.game_id = ?";
+        $sql = "SELECT id FROM players WHERE players.group_id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $game_id);
+        $stmt->bind_param("i", $group_id);
         $stmt->execute();
         $result = $stmt->get_result();
         $ids = [];

@@ -1,6 +1,6 @@
 <?php
 include_once("clearDB.php");
-include_once("gameManager.php");
+include_once("groupsManager.php");
 include_once("playersManager.php");
 include_once("questionsHandler.php");
 
@@ -24,15 +24,15 @@ function handleNewPlayerMessage($conn, $phone_number, $messageText)
 
     if ($parts[0] === "crear" && count($parts) >= 2) {
         $name = ucfirst($parts[1]);
-        echo "🛠 Creating a game and adding you as the first player: $name<br>";
-        createGameWithAdmin($conn, $phone_number, $name);
+        echo "🛠 Creating a group and adding you as the first player: $name<br>";
+        createGroupWithAdmin($conn, $phone_number, $name);
         return;
     }
 
     if ($parts[0] === "unirme" && count($parts) >= 3) {
-        $game_id = intval($parts[1]);
+        $group_id = intval($parts[1]);
         $name = ucfirst($parts[2]);
-        joinGame($conn, $phone_number, $name, $game_id);
+        joinGrup($conn, $phone_number, $name, $group_id);
         return;
     }
 
@@ -50,33 +50,33 @@ function checkName($name)
 }
 
 
-function createGameWithAdmin($conn, $phone_number, $name)
+function createGroupWithAdmin($conn, $phone_number, $name)
 {
     if (!checkName($name)) return;
-    $game_id = createGame($conn);
-    if ($game_id) {
-        createPlayer($conn, $phone_number, $name, $game_id, true);
-        echo "✅ Game created with ID $game_id. You are now the admin.";
+    $group_id = createGroup($conn);
+    if ($group_id) {
+        createPlayer($conn, $phone_number, $name, $group_id, true);
+        echo "✅ Group created with ID $grup_id. You are now the admin.";
     } else {
-        echo "❌ Failed to create the game.";
+        echo "❌ Failed to create the group.";
     }
 }
 
-function joinGame($conn, $phone_number, $name, $game_id)
+function joinGroup($conn, $phone_number, $name, $group_id)
 {
     if (!checkName($name)) return;
-    if (!gameExists($conn, $game_id)) {
-        echo "❌ El juego con ID $game_id no existe.";
+    if (!groupExists($conn, $group_id)) {
+        echo "❌ El juego con ID $group_id no existe.";
         return;
     }
-    createPlayer($conn, $phone_number, $name, $game_id, false);
-    echo "✅ Te uniste correctamente al juego $game_id como $name.";
+    createPlayer($conn, $phone_number, $name, $group_id, false);
+    echo "✅ Te uniste correctamente al juego $group_id como $name.";
 }
 
 
 
-function endGame($conn, $game_id)
+function endGroup($conn, $group_id)
 {
-    deletePlayers($conn, $game_id);
-    deleteId($conn, $game_id);
+    deletePlayers($conn, $group_id);
+    deleteId($conn, $group_id);
 }

@@ -23,12 +23,12 @@ function fetchQuestions($conn)
 }
 
 
-function fetchGameQuestions($conn, $game_id)
+function fetchGroupQuestions($conn, $group_id)
 {
     try {
-        $sql = "SELECT questions FROM game WHERE game.game_id = ?";
+        $sql = "SELECT questions FROM group WHERE group.group_id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $game_id);
+        $stmt->bind_param("i", $group_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -47,15 +47,15 @@ function extractQuestions($questions)
     return $array;
 }
 
-function insertQuestions($conn, $game_id)
+function insertQuestions($conn, $group_id)
 {
     try {
-        $questions = fetchGameQuestions($conn, $game_id);
+        $questions = fetchGroupQuestions($conn, $group_id);
         $questionsArray = extractQuestions($questions);
         $newQuestionsArray = array_slice($questionsArray, 1);
         $questionsStr = implode(", ", $newQuestionsArray);
 
-        $sql = "UPDATE game SET questions = '$questionsStr' WHERE game_id = $game_id;";
+        $sql = "UPDATE group SET questions = '$questionsStr' WHERE ggroup_id = $group_id;";
         if ($conn->query($sql) === TRUE) {
             echo "\n questions updated <br>";
         } else {
