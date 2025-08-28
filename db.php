@@ -8,9 +8,9 @@ try {
         questions TEXT NOT NULL
     )";
     $conn->query($sql);
-    echo "[✔] Table 'Game' created.<br>";
+    error_log("[DB][schema] Table 'Game' created.");
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error creating 'Game' table: " . $e->getMessage() . "<br>";
+    error_log("[DB][schema][ERROR] Error creating 'Game' table: " . $e->getMessage());
 }
 
 try {
@@ -20,9 +20,9 @@ try {
         question_text TEXT NOT NULL
     )";
     $conn->query($sql);
-    echo "[✔] Table 'Questions' created.<br>";
+    error_log("[DB][schema] Table 'Questions' created.");
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error creating 'Questions' table: " . $e->getMessage() . "<br>";
+    error_log("[DB][schema][ERROR] Error creating 'Questions' table: " . $e->getMessage());
 }
 
 try {
@@ -37,9 +37,9 @@ try {
     FOREIGN KEY (game_id) REFERENCES Game(game_id)
     );";
     $conn->query($sql);
-    echo "[✔] Table 'Players' created.<br>";
+    error_log("[DB][schema] Table 'Players' created.");
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error creating 'Players' table: " . $e->getMessage() . "<br>";
+    error_log("[DB][schema][ERROR] Error creating 'Players' table: " . $e->getMessage());
 }
 
 // Seed questions if table is empty
@@ -54,13 +54,13 @@ try {
         foreach ($questionSeed as $q) {
             $stmt->bind_param("s", $q);
             $stmt->execute();
-            echo "[✔] Inserted question: '$q' <br>";
+            error_log("[DB][seed] Inserted question: '$q'");
         }
     } else {
-        echo "[i] Questions table already has data.<br>";
+        error_log("[DB][seed] Questions table already has data.");
     }
 } catch (mysqli_sql_exception $e) {
-    echo "[✖] Error seeding questions: " . $e->getMessage() . "<br>";
+    error_log("[DB][seed][ERROR] Error seeding questions: " . $e->getMessage());
 }
 
 // ⛔ NO CERRAR LA CONEXIÓN AQUÍ
